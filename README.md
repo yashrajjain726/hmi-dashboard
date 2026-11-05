@@ -96,6 +96,15 @@ The curved strip is decorative; it indicates movement and is not a calibrated an
 
 UI copy is currently English-only. There are no instrumentation tests. Emulator/device verification must be completed before treating the project as ready for evaluation.
 
+## Verification recorded on 5 November 2026
+
+- Debug APK: built successfully.
+- Unit tests: 9 passed, 0 failures or errors.
+- Android lint: completed with 0 errors and 9 warnings. These concern newer dependency/target SDK versions, fixed landscape orientation, backup configuration and the missing launcher icon. The landscape restriction is intentional for this assignment.
+- Emulator run and visual verification: not completed; this workspace has no configured emulator.
+
+On this Windows build host, Java needed a short Unix-domain socket temporary directory to start Gradle. If you encounter `Unable to establish loopback connection`, point the JVM property `jdk.net.unixdomain.tmpdir` at an existing short writable directory using `JAVA_TOOL_OPTIONS`, then retry the build. This is a host workaround, not an app requirement.
+
 ## Quick manual check
 
 1. Launch on a landscape emulator and observe two complete six-second cycles.
