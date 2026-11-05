@@ -28,7 +28,15 @@ class DashboardViewModelTest {
     private fun model(source: VehicleDataSource): DashboardViewModel =
         DashboardViewModel(source, { dispatcher.scheduler.currentTime }).also { store.put("dashboard", it) }
 
-    @Test fun everyScenarioReachesTheUiState() = runTest(dispatcher) {
+    private fun runDashboardTest(block: suspend TestScope.() -> Unit) = runTest(dispatcher) {
+        try {
+            block()
+        } finally {
+            store.clear()
+        }
+    }
+
+    @Test fun everyScenarioReachesTheUiState() = runDashboardTest {
         val source = FakeVehicleDataSource()
         val vm = model(source)
         runCurrent()
@@ -43,7 +51,7 @@ class DashboardViewModelTest {
         }
     }
 
-    @Test fun silenceMarksDataStaleAndNewDataRestoresIt() = runTest(dispatcher) {
+    @Test fun silenceMarksDataStaleAndNewDataRestoresIt() = runDashboardTest {
         val source = FakeVehicleDataSource()
         val vm = model(source)
         source.send(VehicleReading(25.0, true, false, "Riding"))
@@ -60,7 +68,7 @@ class DashboardViewModelTest {
         assertEquals(true, vm.state.value.killSwitchActive)
     }
 
-    @Test fun sourceFailureBecomesAnErrorState() = runTest(dispatcher) {
+    @Test fun sourceFailureBecomesAnErrorState() = runDashboardTest {
         val source = object : VehicleDataSource {
             override val readings = flow<VehicleReading> { error("Disconnected") }
         }
@@ -69,7 +77,7 @@ class DashboardViewModelTest {
         assertEquals(DataHealth.ERROR, vm.state.value.health)
     }
 
-    @Test fun noFirstReadingRemainsWaiting() = runTest(dispatcher) {
+    @Test fun noFirstReadingRemainsWaiting() = runDashboardTest {
         val vm = model(FakeVehicleDataSource())
         advanceTimeBy(5_000)
         runCurrent()
