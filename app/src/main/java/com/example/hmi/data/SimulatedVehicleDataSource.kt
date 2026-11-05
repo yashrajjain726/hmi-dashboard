@@ -5,14 +5,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 
 enum class SimulationMode { NORMAL, INVALID_SPEED, MISSING_SIGNALS, PAUSED }
 
 class SimulatedVehicleDataSource : VehicleDataSource {
-    private val mode = MutableStateFlow(SimulationMode.NORMAL)
+    private val mutableMode = MutableStateFlow(SimulationMode.NORMAL)
+    val mode = mutableMode.asStateFlow()
 
-    fun setMode(value: SimulationMode) { mode.value = value }
+    fun setMode(value: SimulationMode) { mutableMode.value = value }
 
     override val readings: Flow<VehicleReading> = flow {
         var index = 0

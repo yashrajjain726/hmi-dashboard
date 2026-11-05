@@ -22,8 +22,7 @@ import com.example.hmi.dashboard.DataHealth
 import com.example.hmi.data.SimulationMode
 
 @Composable
-fun DashboardScreen(state: DashboardUiState, onModeChange: (SimulationMode) -> Unit) {
-    var selectedMode by remember { mutableStateOf(SimulationMode.NORMAL) }
+fun DashboardScreen(state: DashboardUiState, selectedMode: SimulationMode, onModeChange: (SimulationMode) -> Unit) {
     val fresh = state.health == DataHealth.LIVE
     val healthColor = if (fresh) Mint else Warning
     val healthLabel = when (state.health) {
@@ -93,7 +92,7 @@ fun DashboardScreen(state: DashboardUiState, onModeChange: (SimulationMode) -> U
                     ).forEach { (mode, label) ->
                         FilterChip(
                             selected = selectedMode == mode,
-                            onClick = { selectedMode = mode; onModeChange(mode) },
+                            onClick = { onModeChange(mode) },
                             label = { Text(label, fontSize = 11.sp) },
                         )
                     }
