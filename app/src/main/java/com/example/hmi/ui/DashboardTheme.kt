@@ -15,6 +15,8 @@ fun DashboardTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = darkColorScheme(
             primary = Mint,
+            secondaryContainer = Color(0xFF123D30),
+            onSecondaryContainer = Mint,
             background = Color(0xFF080B0D),
             surface = Panel,
             onBackground = Color.White,
