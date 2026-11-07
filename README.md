@@ -62,7 +62,7 @@ Normal mode repeats this sequence at one-second intervals:
 
 The first reading is emitted immediately. Coasting is an additional scenario demonstrating that motor OFF does not imply zero speed.
 
-Use the bottom controls to explore edge cases:
+Open the grid button at the bottom left to choose a simulation mode:
 
 - **Invalid speed:** emits a negative speed while keeping valid motor and kill-switch signals.
 - **Missing data:** emits unavailable values for all three signals.
@@ -93,20 +93,23 @@ The JVM tests use virtual coroutine time, so they do not wait for real one-secon
 
 ## Design and scope
 
-The design follows the reference's dark landscape layout, central speed reading, green accents and peripheral status indicators. The motor status remains separate from the kill switch, whose location is not specified in the reference.
+The dashboard recreates the reference's composition: black background, central white speed, green mode badge, sculpted ECO/range tray, shaded lower wings, orange illuminated band, right-side alert stack, odometer and circular bottom controls. The motor pill is at the bottom right. The required kill-switch indicator occupies the reference's open left-hand area because it has no specified location in the image.
 
-The curved strip is decorative; it indicates movement and is not a calibrated analogue gauge. Alerts, maps, phone pairing, battery/range estimates, ride modes and 3D effects from the production reference are not implemented. The app does not pretend to have live values for these optional features.
+`DashboardArtwork` draws the panels, lighting, vents and icons with Compose Canvas paths and gradients. `ReferenceViewport` scales a 1000 × 600 design canvas uniformly to fit the display, preserving the artwork's proportions. Different aspect ratios can have black margins. This is a drawn approximation of the reference; the original fonts, icon vectors and 3D assets were not supplied.
 
-UI copy is currently English-only. The dashboard was verified on an Android 11 emulator in landscape at 1280 × 720 and 420 dpi. Other Android versions and physical devices have not been tested. Compact displays use smaller status panels and omit optional descriptive text so required signals remain visible. System bars are hidden and can be revealed with a swipe.
+Speed, motor, kill switch and data health are reactive. ECO, 62 km range, 100% battery, 1324 km odometer, phone/connectivity badges, Rapid Brake, SuperHold, speed warning and cruise-control graphics are static reference illustrations. They are not calculated vehicle signals or working vehicle controls. The clock shows the time when the screen is opened. The grid button opens the functional simulation menu; maps, music and auxiliary icons are decorative.
+
+UI copy is currently English-only. The dashboard was verified on an Android 11 emulator in landscape at 1280 × 720 and 420 dpi. Other Android versions and physical devices have not been tested. System bars are hidden and can be revealed with a swipe.
 
 ## Verification recorded on 7 November 2026
 
 - Debug APK: built successfully.
 - Unit tests: 9 passed, 0 failures or errors.
-- Android lint: completed with 0 errors and 12 warnings. These concern newer dependency/target SDK versions, fixed landscape orientation, backup configuration and the missing launcher icon. The landscape restriction is intentional for this assignment.
+- Android lint: completed with 0 errors and 13 warnings. These concern newer dependency/target SDK versions, fixed landscape orientation, backup configuration, the missing launcher icon and a Compose modifier default. The landscape restriction is intentional for this assignment.
 - Android 11 on-device verification: 1 test passed, covering six live scenarios and four edge/recovery states, with ten screenshots captured and visually inspected.
-- The first emulator run exposed clipping on compact displays. The layout now sizes the speed reading from the available body height and uses compact status panels. The on-device checks assert visibility of the required values.
-- A 12.56-second live screen recording was captured, and the emulator crash log had no entries.
+- The reference-style layout scales its artwork and text together to fit the viewport. The on-device checks assert visibility of the required values and operate the simulation menu through its grid button.
+- The final reference-style dashboard passed its on-device test in 37.763 seconds. The simulation menu labels were also visually checked after fixing their wrapping.
+- A fresh 12-second live screen recording was captured, and the emulator crash log had no entries.
 
 ![Riding on the emulator](docs/verification/riding.png)
 
@@ -118,7 +121,7 @@ On this Windows build host, Java needed a short Unix-domain socket temporary dir
 
 1. Launch on a landscape emulator and observe two complete six-second cycles.
 2. Confirm speed, motor and kill-switch values match the table above.
-3. Select Invalid speed; confirm only speed becomes unavailable.
+3. Open the bottom-left grid menu and select Invalid speed; confirm only speed becomes unavailable.
 4. Select Missing data; confirm all signals become unavailable.
 5. Select Normal, then Pause data; confirm the stale warning after three seconds.
 6. Select Normal again; confirm fresh readings restore the display.

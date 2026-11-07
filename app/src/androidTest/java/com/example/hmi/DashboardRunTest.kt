@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -35,37 +36,49 @@ class DashboardRunTest {
             capture("${index + 1}-${scenario.lowercase().replace(' ', '-')}")
         }
 
-        screen.onNodeWithText("Invalid speed").performClick()
+        selectMode("Invalid speed")
         awaitText("Invalid speed reading")
         screen.onNodeWithText("—").assertIsDisplayed()
         screen.onNodeWithText("ON").assertIsDisplayed()
         capture("7-invalid-speed")
 
-        screen.onNodeWithText("Missing data").performClick()
+        selectMode("Missing data")
         awaitText("Speed signal unavailable")
         check(screen.onAllNodesWithText("UNAVAILABLE").fetchSemanticsNodes().size == 2)
         screen.onAllNodesWithText("UNAVAILABLE")[0].assertIsDisplayed()
         screen.onAllNodesWithText("UNAVAILABLE")[1].assertIsDisplayed()
         capture("8-missing-data")
 
-        screen.onNodeWithText("Normal").performClick()
+        selectMode("Normal")
         awaitText("Parked")
-        screen.onNodeWithText("Pause data").performClick()
+        selectMode("Pause data")
         awaitText("DATA STALE · LAST READING HIDDEN")
         screen.onNodeWithText("—").assertIsDisplayed()
         check(screen.onAllNodesWithText("UNAVAILABLE").fetchSemanticsNodes().size == 2)
         capture("9-stale-data")
 
-        screen.onNodeWithText("Normal").performClick()
+        selectMode("Normal")
         awaitText("Ready")
         screen.onNodeWithText("LIVE SIMULATION").assertIsDisplayed()
         screen.onNodeWithText("ON").assertIsDisplayed()
         capture("10-recovered")
     }
 
+    private fun selectMode(label: String) {
+        screen.onNodeWithContentDescription("Simulation controls").performClick()
+        capture("menu-before-selection")
+        screen.onNodeWithText(label).assertIsDisplayed().performClick()
+        capture("menu-after-selection")
+    }
+
     private fun awaitText(text: String) {
-        screen.waitUntil(timeoutMillis = 20_000) {
-            screen.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        try {
+            screen.waitUntil(timeoutMillis = 20_000) {
+                screen.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (failure: Throwable) {
+            capture("failure")
+            throw failure
         }
     }
 
