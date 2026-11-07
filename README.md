@@ -20,9 +20,11 @@ From PowerShell on Windows:
 .\gradlew.bat assembleDebug
 .\gradlew.bat testDebugUnitTest
 .\gradlew.bat lintDebug
+.\gradlew.bat connectedDebugAndroidTest
 ```
 
 On macOS/Linux, use `sh ./gradlew` with the same task names.
+The connected test task requires a booted emulator or connected Android device.
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. Unit-test reports are in `app/build/reports/tests/testDebugUnitTest/index.html`.
 
@@ -87,6 +89,7 @@ The JVM tests use virtual coroutine time, so they do not wait for real one-secon
 - `DashboardStateMapperTest`: invalid speed, missing signals, and coasting with motor OFF.
 - `DashboardViewModelTest`: scenario propagation, initial waiting, stale timeout and recovery, and a thrown source error.
 - `SimulatorTest`: emission sequence/timing and pause/resume.
+- `DashboardRunTest` (on-device): all six live scenarios, visible speed/motor/kill-switch values, invalid speed, missing signals, stale data and recovery. It saves ten real device screenshots in the app's external files directory under `verification/`.
 
 ## Design and scope
 
@@ -94,14 +97,20 @@ The design follows the reference's dark landscape layout, central speed reading,
 
 The curved strip is decorative; it indicates movement and is not a calibrated analogue gauge. Alerts, maps, phone pairing, battery/range estimates, ride modes and 3D effects from the production reference are not implemented. The app does not pretend to have live values for these optional features.
 
-UI copy is currently English-only. There are no instrumentation tests. Emulator/device verification must be completed before treating the project as ready for evaluation.
+UI copy is currently English-only. The dashboard was verified on an Android 11 emulator in landscape at 1280 × 720 and 420 dpi. Other Android versions and physical devices have not been tested. Compact displays use smaller status panels and omit optional descriptive text so required signals remain visible. System bars are hidden and can be revealed with a swipe.
 
-## Verification recorded on 5 November 2026
+## Verification recorded on 7 November 2026
 
 - Debug APK: built successfully.
 - Unit tests: 9 passed, 0 failures or errors.
-- Android lint: completed with 0 errors and 9 warnings. These concern newer dependency/target SDK versions, fixed landscape orientation, backup configuration and the missing launcher icon. The landscape restriction is intentional for this assignment.
-- Emulator run and visual verification: not completed; this workspace has no configured emulator.
+- Android lint: completed with 0 errors and 12 warnings. These concern newer dependency/target SDK versions, fixed landscape orientation, backup configuration and the missing launcher icon. The landscape restriction is intentional for this assignment.
+- Android 11 on-device verification: 1 test passed, covering six live scenarios and four edge/recovery states, with ten screenshots captured and visually inspected.
+- The first emulator run exposed clipping on compact displays. The layout now sizes the speed reading from the available body height and uses compact status panels. The on-device checks assert visibility of the required values.
+- A 12.56-second live screen recording was captured, and the emulator crash log had no entries.
+
+![Riding on the emulator](docs/verification/riding.png)
+
+![Stale data on the emulator](docs/verification/stale-data.png)
 
 On this Windows build host, Java needed a short Unix-domain socket temporary directory to start Gradle. If you encounter `Unable to establish loopback connection`, point the JVM property `jdk.net.unixdomain.tmpdir` at an existing short writable directory using `JAVA_TOOL_OPTIONS`, then retry the build. This is a host workaround, not an app requirement.
 
